@@ -5,9 +5,12 @@ import os
 import shutil
 from pathlib import Path
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 NO_EXTENSION_DIR = "NO_EXTENSION"
+
 
 async def copy_file(source_path: Path, output_dir: Path):
     if source_path.suffix:
@@ -17,7 +20,7 @@ async def copy_file(source_path: Path, output_dir: Path):
 
     target_dir = output_dir / extension
     target_path = target_dir / source_path.name
-    
+
     try:
         await asyncio.to_thread(target_dir.mkdir, parents=True, exist_ok=True)
     except Exception as e:
@@ -30,11 +33,12 @@ async def copy_file(source_path: Path, output_dir: Path):
     except Exception as e:
         logging.error(f"Error copying file {source_path}: {e}")
 
+
 async def read_folder(source_dir: Path, output_dir: Path):
     logging.info(f"Starting scan of source directory: {source_dir}")
-    
+
     tasks = []
-    
+
     try:
         for root, dirs, files in await asyncio.to_thread(os.walk, source_dir):
             root_path = Path(root)
@@ -50,34 +54,35 @@ async def read_folder(source_dir: Path, output_dir: Path):
         return
 
     logging.info(f"Found {len(tasks)} files. Starting asynchronous copying...")
-    
+
     await asyncio.gather(*tasks)
-    
+
     logging.info("All files processed. Sorting complete!")
+
 
 def main():
     parser = argparse.ArgumentParser(
         description="Asynchronous file sorter by extension.",
-        formatter_class=argparse.RawTextHelpFormatter
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "source_dir", 
-        type=str, 
-        help="Path to the source folder for reading files."
+        "source_dir", type=str, help="Path to the source folder for reading files."
     )
     parser.add_argument(
-        "output_dir", 
-        type=str, 
-        help="Path to the output folder for creating subdirectories."
+        "output_dir",
+        type=str,
+        help="Path to the output folder for creating subdirectories.",
     )
-    
+
     args = parser.parse_args()
-    
+
     source_path = Path(args.source_dir)
     output_path = Path(args.output_dir)
 
     if not source_path.is_dir():
-        logging.error(f"Source directory not found or is not a directory: {source_path}")
+        logging.error(
+            f"Source directory not found or is not a directory: {source_path}"
+        )
         return
 
     try:
@@ -92,6 +97,7 @@ def main():
         logging.warning("Operation interrupted by the user.")
     except Exception as e:
         logging.critical(f"Unexpected error occurred: {e}")
+
 
 if __name__ == "__main__":
     main()
